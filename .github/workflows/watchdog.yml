@@ -1,0 +1,52 @@
+name: GCP Permissions Watchdog
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Watchdog Repo
+        uses: actions/checkout@v4
+        with:
+          path: watchdog
+
+      - name: Checkout Data Repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/gcp-permissions-checker # Update this if different
+          path: data-repo
+          fetch-depth: 0 # Fetch all history for analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r watchdog/requirements.txt
+
+      - name: Run Watchdog Analysis
+        run: |
+          mkdir -p output
+          cp -r watchdog/static/* output/
+          python watchdog/watchdog.py --repo-path data-repo --output-dir output --file-pattern permissions.json
+          # Note: Changed file-pattern to permissions.json as intended for production
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

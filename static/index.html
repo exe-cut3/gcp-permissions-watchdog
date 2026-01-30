@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP Permissions Watchdog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <h2>History</h2>
+                <div id="repo-stats" class="repo-stats">Logging...</div>
+            </header>
+            <div id="commit-list" class="commit-list">
+                <!-- Sidebar items injected by JS -->
+                <div class="loading">Loading...</div>
+            </div>
+        </aside>
+
+        <main class="content-pane">
+            <header class="content-header">
+                <h1>GCP Permissions Watchdog</h1>
+            </header>
+            <div id="detail-view" class="detail-view">
+                <div class="empty-state">Select a commit to view details</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

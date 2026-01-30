@@ -1,0 +1,316 @@
+:root {
+    --bg-color: #0d1117;
+    --sidebar-bg: #161b22;
+    --content-bg: #0d1117;
+    --border-color: #30363d;
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --accent-color: #58a6ff;
+    --accent-dim: rgba(88, 166, 255, 0.1);
+
+    /* GitHub-like Diff Colors */
+    --diff-add-bg: rgba(46, 160, 67, 0.15);
+    --diff-add-text: #e6ffec;
+    --diff-del-bg: rgba(248, 81, 73, 0.15);
+    --diff-del-text: #ffebe9;
+
+    --new-color: #3fb950;
+    --delete-color: #f85149;
+
+    --hover-bg: rgba(255, 255, 255, 0.04);
+    --selected-bg: rgba(56, 139, 253, 0.15);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    /* Prevent body scroll, let containers scroll */
+}
+
+/* Layout */
+.app-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 350px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.repo-stats {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.commit-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.sidebar-item {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.sidebar-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.sidebar-item.selected {
+    background-color: var(--selected-bg);
+    border-left: 3px solid var(--accent-color);
+}
+
+.sidebar-item .date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.sidebar-item .message {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+}
+
+.sidebar-item .meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+}
+
+.sidebar-item .author {
+    color: var(--text-secondary);
+}
+
+.sidebar-item .diff-badge {
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.diff-badge.pos {
+    color: var(--new-color);
+}
+
+.diff-badge.neg {
+    color: var(--delete-color);
+}
+
+/* Main Content */
+.content-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--content-bg);
+    overflow: hidden;
+}
+
+.content-header {
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.content-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+.detail-view {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+/* Stats Bar */
+.stats-bar {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: var(--sidebar-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.detail-header {
+    margin-bottom: 30px;
+}
+
+.detail-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.detail-meta {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Summary Box */
+.summary-box {
+    margin-bottom: 30px;
+}
+
+.summary-box h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.summary-item {
+    background-color: var(--sidebar-bg);
+    border: 1px solid var(--border-color);
+    padding: 12px 16px;
+    border-radius: 6px;
+}
+
+.summary-item .service-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.summary-item .service-stats {
+    font-size: 0.9rem;
+    font-family: monospace;
+}
+
+/* Changes Lists */
+.change-header {
+    margin: 30px 0 15px 0;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.service-group {
+    background-color: var(--sidebar-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.service-name {
+    padding: 10px 16px;
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.permission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.permission-list li {
+    padding: 8px 16px;
+    font-family: monospace;
+    /* ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace; */
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* GitHub Style Diff Rows */
+.diff-row-add {
+    background-color: var(--diff-add-bg);
+    color: var(--diff-add-text);
+}
+
+.diff-row-del {
+    background-color: var(--diff-del-bg);
+    color: var(--diff-del-text);
+}
+
+.marker {
+    display: inline-block;
+    width: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    user-select: none;
+}
+
+.text-green {
+    color: var(--new-color);
+}
+
+.text-red {
+    color: var(--delete-color);
+}
+
+.loading,
+.empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: 100px;
+    font-size: 1.1rem;
+}
