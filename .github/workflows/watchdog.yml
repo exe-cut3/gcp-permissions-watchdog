@@ -10,10 +10,13 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  DATA_REPO: ${{ github.repository_owner }}/gcp-permissions-checker
+  PYTHON_VERSION: '3.11'
+
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment: github-pages
     steps:
       - name: Checkout Watchdog Repo
         uses: actions/checkout@v4
@@ -23,14 +26,15 @@ jobs:
       - name: Checkout Data Repo
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository_owner }}/gcp-permissions-checker # Update this if different
+          repository: ${{ env.DATA_REPO }}
           path: data-repo
           fetch-depth: 0 # Fetch all history for analysis
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
 
       - name: Install Dependencies
         run: |
@@ -40,14 +44,27 @@ jobs:
         run: |
           mkdir -p output
           cp -r watchdog/static/* output/
+          # Ensure we use the correct paths relative to the runner workspace
           python watchdog/watchdog.py --repo-path data-repo --output-dir output --file-pattern permissions.txt
-          # Using permissions.txt as observed in the checker repo
 
-      - name: Upload artifact
+      - name: Add Job Summary
+        run: |
+          echo "## Watchdog Analysis Complete :dog:" >> $GITHUB_STEP_SUMMARY
+          echo "Analyzed repo: \`$DATA_REPO\`" >> $GITHUB_STEP_SUMMARY
+          echo "Output generated in \`output/\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: output
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
