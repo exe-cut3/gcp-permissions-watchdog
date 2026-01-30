@@ -40,8 +40,8 @@ jobs:
         run: |
           mkdir -p output
           cp -r watchdog/static/* output/
-          python watchdog/watchdog.py --repo-path data-repo --output-dir output --file-pattern permissions.json
-          # Note: Changed file-pattern to permissions.json as intended for production
+          python watchdog/watchdog.py --repo-path data-repo --output-dir output --file-pattern permissions.txt
+          # Using permissions.txt as observed in the checker repo
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
