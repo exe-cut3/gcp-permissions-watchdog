@@ -146,10 +146,27 @@ body {
     flex-shrink: 0;
 }
 
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .content-header h1 {
     margin: 0;
     font-size: 1.5rem;
     color: var(--accent-color);
+}
+
+.github-link {
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.github-link:hover {
+    color: var(--text-primary);
 }
 
 .detail-view {
@@ -318,30 +335,34 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
     .app-layout {
-        flex-direction: column; /* Stack vertically */
+        flex-direction: column;
+        /* Stack vertically */
     }
 
     .sidebar {
         width: 100%;
-        height: 40vh; /* Fixed height for sidebar on mobile */
+        height: 40vh;
+        /* Fixed height for sidebar on mobile */
         border-right: none;
         border-bottom: 1px solid var(--border-color);
     }
-    
+
     .commit-list {
         /* overflow-y handled by flex */
     }
 
     .content-pane {
         width: 100%;
-        height: 60vh; /* Remaining height */
+        height: 60vh;
+        /* Remaining height */
     }
 
     .stats-bar {
-        flex-wrap: wrap; /* Wrap stats on small screens */
+        flex-wrap: wrap;
+        /* Wrap stats on small screens */
         gap: 20px;
     }
-    
+
     .stat {
         min-width: 40%;
     }
@@ -351,9 +372,10 @@ body {
         align-items: flex-start;
         gap: 8px;
     }
-    
+
     .detail-view {
-        padding: 20px; /* Reduce padding */
+        padding: 20px;
+        /* Reduce padding */
     }
 }
 
@@ -362,7 +384,8 @@ body {
     display: block;
     width: 100%;
     padding: 12px;
-    background: var(--bg-secondary); /* Ensure this var exists or use sidebar-bg */
+    background: var(--bg-secondary);
+    /* Ensure this var exists or use sidebar-bg */
     background-color: var(--sidebar-bg);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
