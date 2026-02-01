@@ -168,11 +168,15 @@ def analyze_repo(repo_path, file_pattern):
                 # That explains "Native API discovery" (+1650 -419).
                 # User wants to see "GCP updates", not "Tool updates".
                 
-                # STRICT FILTER Implementation:
-                is_auto_update = "Auto-update" in commit.message
-                is_release = "release" in commit.message.lower()
+            # STRICT FILTER Implementation (Refined):
+                # User wants to capture "Auto-update" and major manual changes (Refactor, Feat), 
+                # but validly exclude "update readme" or trivial maintenance.
                 
-                if is_auto_update or is_release or (has_changes and len(history) < 1):
+                msg_lower = commit.message.lower()
+                keywords = ["auto-update", "release", "refactor", "feat:", "fix:", "merge"]
+                is_relevant = any(k in msg_lower for k in keywords)
+                
+                if is_relevant and (has_changes or (not prev_perms and curr_perms)):
                      history.append(commit_data)
         
         prev_perms = curr_perms
