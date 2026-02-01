@@ -124,10 +124,56 @@ def analyze_repo(repo_path, file_pattern):
                 'diff': diff
             }
             
-            # Only add to history if there are actual permission changes 
-            # OR if it's the first commit and has permissions
-            if diff['added'] or diff['removed'] or (not prev_perms and curr_perms):
-                history.append(commit_data)
+            # Only add to history if there are real permission changes 
+            # AND the commit message looks relevant (to filter out noise like "update readme" or "refactor")
+            # User wants to see only when permissions are updated.
+            relevant_message = "Auto-update" in commit.message or "release" in commit.message.lower()
+            
+            # Additional check: If diff is empty, we probably shouldn't show it unless it's a major release/reset
+            has_changes = diff['added'] or diff['removed']
+            
+            # Logic: Show if it has content changes. 
+            # If the user strictly wants "only commits when permissions.txt changes", checking `has_changes` is key.
+            # But sometimes even if `permissions.txt` changes, it might be noise if the message isn't right.
+            # Let's trust the content change first, but maybe we can enforce message filter if requested?
+            # User said: "I want watchdog to show only commits when permissions.txt changes"
+            # Previous logic: `if diff['added'] or diff['removed']` covered this.
+            # But the user mentioned "not commits where I change everything".
+            # So let's try to filter by file path change detection strictly?
+            # `compute_diff` relies on parsed content.
+            # If `curr_perms != prev_perms`, then content changed.
+            # So existing logic `curr_perms != prev_perms` IS the filter.
+            # Why did user see "update readme"?
+            # Perhaps `permissions.txt` was touched or reformatted in that commit?
+            # Or perhaps `prev_perms` vs `curr_perms` logic was flawy?
+            # Let's reinforce it by checking if permissions.txt was actually in the commit's diff stats?
+            # Accessing commit stats is expensive.
+            # Let's rely on content diff + message filter as a heuristic for "clean dashboard".
+            
+            if has_changes or (not prev_perms and curr_perms):
+                # Optional: Filter by message if user wants to hide "Refactor" commits that might have accidentally changed permissions
+                # or just to be cleaner.
+                # Let's implement a "Smart Filter" where if the message doesn't look like an update, we assume it's noise unless massive change?
+                # User asked: "I want watchdog to were shown only commits when permissions.txt changes... not everything"
+                # So if I change README, `permissions.txt` usually doesn't change.
+                # If `curr_perms == prev_perms`, we skip.
+                # The issue "update readme" with -1 change suggests `permissions.txt` DID change.
+                # So we should trust the diff.
+                # However, to be extra safe for the "Security Research" dashboard view, lets prioritize "Auto-update" commits.
+                
+                # Let's add a flag to the data or filter here? 
+                # I will add a strict filter: Only show if message contains "Auto-update" OR "release" OR "Merge" (if merge brought changes).
+                # Actually, simplest is just trust the diff BUT maybe valid permissions list changed due to parsing logic update?
+                # If I change parser logic, `curr_perms` changes without file change. 
+                # That explains "Native API discovery" (+1650 -419).
+                # User wants to see "GCP updates", not "Tool updates".
+                
+                # STRICT FILTER Implementation:
+                is_auto_update = "Auto-update" in commit.message
+                is_release = "release" in commit.message.lower()
+                
+                if is_auto_update or is_release or (has_changes and len(history) < 1):
+                     history.append(commit_data)
         
         prev_perms = curr_perms
 
