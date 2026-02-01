@@ -4,34 +4,94 @@ document.addEventListener('DOMContentLoaded', () => {
     const repoStats = document.getElementById('repo-stats');
 
     let historyData = [];
-    let selectedIndex = 0; // Default to first (latest)
+    let selectedIndex = 0;
+    let nextPageUrl = null;
+    let isLoading = false;
 
-    fetch('data.json')
-        .then(response => response.json())
-        .then(data => {
-            historyData = data;
-            renderSidebar();
-            if (historyData.length > 0) {
-                renderDetail(0);
-                repoStats.textContent = `${historyData.length} snapshots found`;
-            } else {
-                repoStats.textContent = 'No history';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading data:', error);
-            commitList.innerHTML = '<div class="loading">Error loading history data.</div>';
-        });
+    // Load initial data
+    loadChunk('data-latest.json');
+
+    function loadChunk(url) {
+        if (isLoading) return;
+        isLoading = true;
+
+        // Add loading indicator if sidebar has content
+        const existingLoader = document.querySelector('.loading-more');
+        if (!existingLoader && historyData.length > 0) {
+            const loader = document.createElement('div');
+            loader.className = 'loading-more';
+            loader.innerText = 'Loading more history...';
+            commitList.appendChild(loader);
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(payload => {
+                // Support both old format (array) and new format (object with data/meta)
+                const newItems = Array.isArray(payload) ? payload : payload.data;
+                const meta = payload.meta || {};
+
+                nextPageUrl = meta.next_page;
+
+                if (historyData.length === 0) {
+                    historyData = newItems;
+                    renderSidebar();
+                    if (historyData.length > 0) {
+                        renderDetail(0);
+                    }
+                } else {
+                    const startIdx = historyData.length;
+                    historyData = historyData.concat(newItems);
+                    appendSidebarItems(newItems, startIdx);
+                }
+
+                updateStats(meta.total_snapshots || historyData.length);
+                updateLoadMoreButton();
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                if (historyData.length === 0) {
+                    commitList.innerHTML = '<div class="loading">Error loading history data.</div>';
+                }
+            })
+            .finally(() => {
+                isLoading = false;
+                const loader = document.querySelector('.loading-more');
+                if (loader) loader.remove();
+            });
+    }
+
+    function updateStats(count) {
+        if (repoStats) repoStats.textContent = `${count} snapshots found`;
+    }
+
+    function updateLoadMoreButton() {
+        const existingBtn = document.getElementById('load-more-btn');
+        if (existingBtn) existingBtn.remove();
+
+        if (nextPageUrl) {
+            const btn = document.createElement('button');
+            btn.id = 'load-more-btn';
+            btn.className = 'load-more-btn';
+            btn.innerText = 'Load Older History';
+            btn.onclick = () => loadChunk(nextPageUrl);
+            commitList.appendChild(btn);
+        }
+    }
 
     function renderSidebar() {
         commitList.innerHTML = '';
-
         if (!historyData || historyData.length === 0) {
             commitList.innerHTML = '<div class="loading">No history found.</div>';
             return;
         }
+        appendSidebarItems(historyData, 0);
+        updateLoadMoreButton();
+    }
 
-        historyData.forEach((item, index) => {
+    function appendSidebarItems(items, startIndex) {
+        items.forEach((item, i) => {
+            const index = startIndex + i;
             const el = document.createElement('div');
             el.className = `sidebar-item ${index === selectedIndex ? 'selected' : ''}`;
             el.onclick = () => selectCommit(index);
@@ -40,8 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 year: 'numeric', month: 'short', day: 'numeric'
             });
 
-            // Calculate simple net change for badge
-            // Note: Use stored counts if available, else calc
             const added = item.stats.added_count;
             const removed = item.stats.removed_count;
             let diffHtml = '';
@@ -57,7 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="badg">${diffHtml}</span>
                 </div>
             `;
-            commitList.appendChild(el);
+
+            // Insert before the load more button if it exists
+            const btn = document.getElementById('load-more-btn');
+            if (btn) {
+                commitList.insertBefore(el, btn);
+            } else {
+                commitList.appendChild(el);
+            }
         });
     }
 

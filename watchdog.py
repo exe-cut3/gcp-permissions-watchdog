@@ -195,12 +195,44 @@ def main():
     print(f"Analyzing repository at: {args.repo_path}")
     history = analyze_repo(args.repo_path, args.file_pattern)
     
-    output_file = os.path.join(args.output_dir, 'data.json')
-    with open(output_file, 'w') as f:
-        json.dump(history, f, cls=DateTimeEncoder, indent=2)
+    # Save history to JSON (Chunked)
+    output_dir = args.output_dir
+    os.makedirs(output_dir, exist_ok=True)
+    
+    CHUNK_SIZE = 50
+    total_commits = len(history)
+    
+    # Split history into chunks
+    # Chunk 0: Latest items
+    for i in range(0, total_commits, CHUNK_SIZE):
+        chunk_data = history[i : i + CHUNK_SIZE]
         
+        chunk_index = i // CHUNK_SIZE
+        filename = "data-latest.json" if chunk_index == 0 else f"data-archive-{chunk_index}.json"
+        
+        # Determine next page
+        next_chunk_index = chunk_index + 1
+        has_next = (i + CHUNK_SIZE) < total_commits
+        next_file = f"data-archive-{next_chunk_index}.json" if has_next else None
+        
+        output_data = {
+            "meta": {
+                "generated_at": datetime.now().isoformat(),
+                "total_snapshots": total_commits,
+                "chunk_index": chunk_index,
+                "next_page": next_file
+            },
+            "data": chunk_data
+        }
+        
+        output_path = os.path.join(output_dir, filename)
+        with open(output_path, 'w') as f:
+            json.dump(output_data, f, cls=DateTimeEncoder, indent=2) # Use DateTimeEncoder here
+            
+        print(f"Saved chunk {chunk_index} to {output_path} ({len(chunk_data)} items)")
+
     print(f"Analysis complete. Found {len(history)} relevant commits.")
-    print(f"Output saved to: {output_file}")
+    print(f"Output saved to directory: {output_dir}")
 
 if __name__ == "__main__":
     main()
