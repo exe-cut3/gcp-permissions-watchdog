@@ -149,13 +149,13 @@ body {
 .header-title {
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: space-between;
+    width: 100%;
 }
 
-.content-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--accent-color);
+.github-links {
+    display: flex;
+    gap: 15px;
 }
 
 .github-link {
@@ -163,10 +163,21 @@ body {
     transition: color 0.2s;
     display: flex;
     align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .github-link:hover {
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.link-label {
+    font-weight: 500;
 }
 
 .detail-view {
