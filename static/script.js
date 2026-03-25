@@ -94,7 +94,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const index = startIndex + i;
             const el = document.createElement('div');
             el.className = `sidebar-item ${index === selectedIndex ? 'selected' : ''}`;
+            el.setAttribute('role', 'button');
+            el.setAttribute('tabindex', '0');
             el.onclick = () => selectCommit(index);
+            el.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectCommit(index);
+                }
+            };
 
             const date = new Date(item.date).toLocaleDateString('en-US', {
                 year: 'numeric', month: 'short', day: 'numeric'
