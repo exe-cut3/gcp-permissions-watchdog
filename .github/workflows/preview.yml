@@ -1,0 +1,46 @@
+name: Preview UI (GitHub Pages)
+
+on:
+  workflow_dispatch: # Trigger manually from any branch to preview UI changes
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Build preview output
+        run: |
+          mkdir -p output
+          cp -r static/* output/
+          # Use the bundled sample data so no external repo access is needed.
+          # script.js fetches data-latest.json; data.json (array format) is supported.
+          cp static/data.json output/data-latest.json
+
+      - name: Add Job Summary
+        run: |
+          echo "## UI Preview Deploy :dog:" >> $GITHUB_STEP_SUMMARY
+          echo "Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Using bundled sample data from \`static/data.json\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
