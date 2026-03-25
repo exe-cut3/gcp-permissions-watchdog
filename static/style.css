@@ -85,6 +85,11 @@ body {
     background-color: var(--hover-bg);
 }
 
+.sidebar-item:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+}
+
 .sidebar-item.selected {
     background-color: var(--selected-bg);
     border-left: 3px solid var(--accent-color);
@@ -411,6 +416,11 @@ body {
 .load-more-btn:hover {
     background-color: var(--hover-bg);
     color: var(--text-primary);
+}
+
+.load-more-btn:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
 }
 
 .loading-more {
